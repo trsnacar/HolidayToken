@@ -1,20 +1,88 @@
-# HolidayToken
-A novelty in the holiday world
-🌴🏖️ Holiday Token - A Cryptocurrency for the Holiday Industry 🚀
+# HolidayToken (HDT)
 
-Welcome to the Holiday Token repository! This project introduces the Holiday Token, a cryptocurrency designed specifically for the holiday industry. It aims to streamline transactions and enhance the overall holiday experience by leveraging blockchain technology.
+An ERC-20 token built with Solidity and OpenZeppelin's upgradeable contracts, designed around a holiday/travel-industry theme. It combines standard ERC-20 functionality with role-based access control, pausability, and an admin-managed blacklist.
 
-Key Features:
+## Overview
 
-Solidity Smart Contract: The Holiday Token is implemented as an ERC-20 compliant smart contract using the Solidity programming language. It incorporates advanced features such as access control, pausing, and role-based permissions to ensure security and compliance.
-Limited Supply and Scarcity: The token has a finite supply, creating a sense of scarcity and value for token holders. It stimulates demand and fosters an ecosystem where the token's value can appreciate over time.
-OpenZeppelin Libraries: The smart contract utilizes the OpenZeppelin libraries, which provide secure and audited code for token implementation. These libraries enhance the contract's reliability and mitigate common vulnerabilities.
-Testing and Quality Assurance:
+`HolidayToken` is implemented in `contracts/HolidayToken.sol` as an upgradeable contract (`ERC20Upgradeable`, `AccessControlUpgradeable`, `PausableUpgradeable` from `@openzeppelin/contracts-upgradeable`). Rather than a constructor, it exposes an `initialize()` function that sets up the token name/symbol (`HolidayToken` / `HDT`), grants the deployer all administrative roles, and mints the initial supply.
 
-JavaScript Testing: The smart contract has been thoroughly tested using JavaScript and the Hardhat framework. Test cases cover various scenarios, including token transfers, balance updates, role-based permissions, and security checks.
-Security Analysis: The contract has undergone a security analysis using Slither, a static analysis tool for Solidity contracts. This analysis helps identify and mitigate potential security vulnerabilities, ensuring the contract's resilience against attacks.
-Future Plans:
+> **Note:** The contract uses OpenZeppelin's `initializer` pattern. If deployed without a proxy, `initialize()` must be called in the same transaction as deployment (or immediately after) to avoid a third party front-running it and claiming the admin roles.
 
-Listing on Decentralized Exchanges: We plan to list the Holiday Token on popular decentralized exchanges (DEXs) to enhance liquidity and accessibility.
-Industry Partnerships: We are actively seeking partnerships with key players in the holiday industry to provide users with a wider range of services and products using the Holiday Token.
-Feel free to explore the code, review the smart contract, and contribute to the project. Together, let's revolutionize the holiday industry and make holiday experiences more seamless, secure, and rewarding!
+## Key Features
+
+- **ERC-20 compliant** token with an initial supply of 1,000,000 HDT (18 decimals) minted to the deployer.
+- **Role-based access control** via OpenZeppelin `AccessControl`:
+  - `DEFAULT_ADMIN_ROLE` — can manage the blacklist and grant/revoke roles.
+  - `MINTER_ROLE` — can mint and burn tokens.
+  - `PAUSER_ROLE` — can pause and unpause all token transfers.
+- **Pausable transfers** — the admin can halt all transfers in an emergency via `pause()` / `unpause()`.
+- **Blacklist** — accounts can be blocked from sending or receiving tokens via `blacklist()` / `unBlacklist()`, checked on every transfer via `_beforeTokenTransfer`.
+- **Upgrade-safe storage** — includes a storage gap (`__gap`) for future upgrades.
+
+## Tech Stack
+
+- [Solidity](https://soliditylang.org/) `0.8.4`
+- [Hardhat](https://hardhat.org/) development environment
+- [OpenZeppelin Contracts Upgradeable](https://docs.openzeppelin.com/contracts/4.x/) `^4.9.0`
+- [Ethers.js](https://docs.ethers.org/v5/) `v5` and [ethereum-waffle](https://www.npmjs.com/package/ethereum-waffle) for testing
+- [Chai](https://www.chaijs.com/) for test assertions
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) (v16 or later recommended)
+- npm
+
+## Installation
+
+```bash
+git clone https://github.com/trsnacar/HolidayToken.git
+cd HolidayToken
+npm install
+```
+
+## Usage
+
+### Compile the contracts
+
+```bash
+npx hardhat compile
+```
+
+### Run the tests
+
+The test suite (`test/HolidayToken.test.js`) covers deployment/role assignment, token transfers, blacklisting, and pausing:
+
+```bash
+npx hardhat test
+```
+
+### Local deployment
+
+The project ships with the default Hardhat network configuration (`hardhat.config.js`, chain ID `1337`). You can deploy and initialize the contract from the Hardhat console or a script, e.g.:
+
+```js
+const HolidayToken = await ethers.getContractFactory("HolidayToken");
+const holidayToken = await HolidayToken.deploy();
+await holidayToken.deployed();
+await holidayToken.initialize();
+```
+
+No deployment scripts or live network configuration are currently included in this repository, and no contract has been deployed to a public network yet.
+
+## Project Structure
+
+```
+contracts/
+  HolidayToken.sol      # Main ERC-20 token contract
+test/
+  HolidayToken.test.js  # Hardhat/Chai test suite
+hardhat.config.js       # Hardhat configuration
+```
+
+## License
+
+The contract source is marked `SPDX-License-Identifier: UNLICENSED`. No separate `LICENSE` file is currently included in this repository.
+
+## Contributing
+
+Contributions are welcome. Please open an issue or pull request to discuss changes before submitting significant work.
